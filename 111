@@ -1,0 +1,46 @@
+BST (traversal NLR) 
+void pre_order(Tree T) {
+  if (T != NULL) {
+    
+    printf("%d ", T->key);
+ 
+    pre_order(T->left);
+ 
+    pre_order(T->right);
+  }
+}
+BST (traversal LNR)
+void in_order(Tree T) {
+  if (T != NULL) {
+   
+    in_order(T->left);
+ 
+    printf("%d ", T->key);
+
+    in_order(T->right);
+  }
+}
+BST (traversal LRN)
+void post_order(Tree T) {
+  if (T != NULL) {
+    
+    post_order(T->left);
+   
+    post_order(T->right);
+  
+    printf("%d ", T->key);
+  }
+}
+BST (Hight of tree)
+int get_height(Tree T) {
+  // Kiểm tra cây rỗng
+  if (T == NULL) {
+    return -1;
+  }
+
+  // Tính chiều cao của nút gốc
+  int left_height = get_height(T->left);
+  int right_height = get_height(T->right);
+  return (left_height > right_height) ? left_height + 1 : right_height + 1;
+}
+
