@@ -50,3 +50,55 @@ int main() {
 
     return 0;
 }
+
+
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>  
+
+int get_count(char s[], char comments[][106], int n) {
+    int count = 0;
+
+    for (int i = 0; i < n; i++) {
+        char lowerComment[106];  
+        char lowerPhrase[51];    
+
+      
+        for (int j = 0; comments[i][j] != '\0'; j++) {
+            lowerComment[j] = tolower(comments[i][j]);
+        }
+        lowerComment[strlen(comments[i])] = '\0';
+        for (int j = 0; s[j] != '\0'; j++) {
+            lowerPhrase[j] = tolower(s[j]);
+        }
+        lowerPhrase[strlen(s)] = '\0';
+
+    
+        const char *found = strstr(lowerComment, lowerPhrase);
+        if (found != NULL) {
+            count++;
+        }
+    }
+
+    return count;
+}
+
+int main() {
+    char s[51];
+    int n;
+
+  
+    scanf("%s %d", s, &n);
+
+    char comments[n][106];  
+
+    
+    for (int i = 0; i < n; i++) {
+        scanf("%s", comments[i]);
+    }
+
+    int derogatory_count = get_count(s, comments, n);
+    printf("%d\n", derogatory_count);
+
+    return 0;
+}
