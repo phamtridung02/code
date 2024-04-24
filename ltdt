@@ -1,0 +1,814 @@
+#include <stdio.h>
+#define MAX 1000
+#define NO_EDGES 0
+#define oo 9999
+typedef struct {
+    int n,m;
+    int w[MAX][MAX];
+} Graph;
+ 
+int mark[MAX];
+int pi[MAX];
+int p[MAX];
+ 
+ 
+int adjacent(Graph *pG, int u, int v){
+   return pG->w[u][v] > 0;
+}
+ 
+// List
+typedef struct {
+    int data[MAX_N];
+    int size;
+} List;
+ 
+void make_null_list(List *pL) {
+    pL->size = 0;
+}
+ 
+void push_back(List *pL, int x) {
+    pL->data[pL->size++] = x;
+}
+ 
+int element_at(List *pL, int i) {
+    return pL->data[i-1];
+}
+ 
+void copy_list(List *pS1, List *pS2) {
+    make_null_list(pS1);
+    for (int i = 1; i <= pS2->size; i++)
+        push_back(pS1, element_at(pS2, i));
+}
+ 
+// Queue
+#define MAX_SIZE 100
+typedef int ElementType;
+ 
+typedef struct {
+	ElementType data[MAX_SIZE];
+	int front, rear;
+} Queue;
+ 
+void make_null_queue(Queue *pQ) {
+	pQ->front = 0;
+	pQ->rear = -1;
+}
+void enqueue(Queue *pQ, int u) {
+	pQ->rear++;
+	pQ->data[pQ->rear] = u;
+}
+ 
+int front(Queue *pQ) {
+	return pQ->data[pQ->front];
+}
+ 
+void dequeue(Queue *pQ) {
+	pQ->front++;
+}
+ 
+int empty(Queue *pQ) {
+	return pQ->front > pQ->rear;
+}
+ 
+// Stack
+#define MAX_SIZE 100
+typedef int ElementType;
+typedef struct {
+	ElementType data[MAX_SIZE];
+	int top_idx;
+} Stack;
+ 
+void make_null_stack(Stack *pS) {
+	pS->top_idx = -1;
+}
+ 
+void push(Stack *pS, ElementType u) {
+	pS->top_idx++;
+	pS->data[pS->top_idx] = u;
+}
+ 
+ElementType top(Stack *pS) {
+	return pS->data[pS->top_idx];
+}
+ 
+void pop(Stack *pS) {
+	pS->top_idx--;
+}
+ 
+int empty(Stack *pS) {
+	return pS->top_idx == -1;
+}
+ 
+List neighbors(Graph* G, int x) {
+    List L;
+    make_null(&L);
+    int e, y;
+    for (y = 1; y <= G->n; y++) {
+    	if (x == y) continue;
+        for (e = 1; e <= G->m; e++)
+            if (G->A[x][e] > 0 && G->A[y][e] > 0) {
+                push_back(&L, y);
+                break;
+            }
+    }
+    return L;
+}
+ 
+ 
+int mark[MAX_N];
+ 
+void BFS(Graph *pG, int s) {
+ 
+	Queue Q;
+	make_null_queue(&Q);
+ 
+	enqueue(&Q, s);
+ 
+	while (!empty(&Q)) {
+ 
+		int u = front(&Q); dequeue(&Q);
+		if (mark[u] != 0) 		
+			continue;
+ 
+		printf("%d\n", u);	
+		mark[u] = 1; 		
+ 
+		for (int v = 1; v <= pG->n; v++)
+			if (adjacent(pG, u, v))
+				enqueue(&Q, v);
+	}
+}
+ 
+void DFS(Graph *pG, int s) {
+	Stack S;
+	make_null_stack(&S);
+	push(&S, s);
+	while (!empty(&S)) {
+		int u = top(&S); pop(&S);
+		if (mark[u] != 0) 	
+			continue;
+ 
+		printf("%d\n", u);	
+		mark[u] = 1; 			
+ 
+		for (int v = pG->n; v >= 1; v--)
+			if (adjacent(pG, u, v))
+				push(&S, v);
+	}
+}
+ 
+int parent[MAX_N];
+ 
+void BFS(Graph *pG, int s) {
+	Queue Q;
+	make_null_queue(&Q);
+	ElementType pair; 									
+	pair.u = s; pair.p = -1; 								
+	enqueue(&Q, pair); 				
+	while (!empty(&Q)) {
+		ElementType pair = front(&Q); dequeue(&Q); 				
+		int u = pair.u, p = pair.p; 							
+		if (mark[u] != 0)
+			continue;
+ 
+		//printf("Duyet %d\n", u);	//Làm gì dó trên u
+		mark[u] = 1; 			
+		parent[u] = p; 					
+ 
+		for (int v = 1; v <= pG->n; v++)
+			if (adjacent(pG, u, v)) {
+				ElementType pair; 						
+				pair.u = v; pair.p = u; 					
+				enqueue(&Q, pair); 						
+			}
+	}
+}
+ 
+// Liên thông
+void DFS(Graph *pG, int u) {
+ 
+	//printf("Duyet %d\n", u);	
+	mark[u] = 1; 			
+ 
+	//2. Xét các d?nh k? c?a u
+	for (int v = 1; v <= pG->n; v++)
+		if (adjacent(pG, u, v) && mark[v] == 0)
+			DFS(pG, v); 			    	
+ 
+}
+ 
+int connected(Graph *pG) {
+	for (int u = 1; u <= pG->n; u++)
+		mark[u] = 0;
+	DFS(pG, 1);
+	for (int u = 1; u <= pG->n; u++)
+		if (mark[u] == 0)
+			return 0; 	
+ 
+	return 1;
+}
+//dem bp lien thong
+int nb_u;
+ 
+void DFS(Graph *pG, int u) {
+	//1. Ðánh d?u u dã duy?t
+	//printf("Duyet %d\n", u);	//Làm gì dó trên u
+	mark[u] = 1; 			//Ðánh d?u nó dã duy?t
+	nb_u++;
+ 
+	//2. Xét các d?nh k? c?a u
+	for (int v = 1; v <= pG->n; v++)
+		if (adjacent(pG, u, v) && mark[v] == 0) //N?u v chua duy?t
+			DFS(pG, v); 			    //g?i d? quy duy?t nó	
+ 
+}
+ 
+// Chu trình
+#define WHITE 0
+#define GRAY  1
+#define BLACK 2
+ 
+int color[MAX_N];	
+int has_circle;		
+ 
+void DFS(Graph *pG, int u) {	
+	color[u] = GRAY; 			
+ 
+	for (int v = 1; v <= pG->n; v++)
+		if (adjacent(pG, u, v)) {
+			if (color[v] == WHITE) 	
+				DFS(pG, v);   		
+			else if (color[v] == GRAY)	
+				has_circle = 1;   	
+		}
+	color[u] = BLACK;
+}
+ 
+// Phân dôi
+#define NO_COLOR 0
+#define BLUE 1
+#define RED 2
+int color[MAX];
+int conflict;
+ 
+void colorize(Graph *pG,int u, int c){
+    int v;
+    color[u]=c;
+    for(v=1;v<=pG->n;v++){
+        if(pG->w[u][v] != NO_EDGES){
+            if(color[v]==NO_COLOR){
+                colorize(pG,v,3-c);
+            }else if(color[u]==color[v]){
+                conflict=1;
+            }
+        }
+    }
+}
+// topo
+int mark[MAX_N];
+ 
+void dfs(Graph *pG, int u, List *pL) {
+    mark[u] = 1;
+    for (int v = 1; v <= pG->n; v++)
+        if (pG->A[u][v] > 0 && !mark[v])
+            dfs(pG, v, pL);
+    push_back(pL, u);
+}
+ 
+ 
+void topo_sort(Graph *pG, List *pL) {
+	for (int u = 1; u <= pG->n; u++)
+		mark[u] = 0;
+ 
+	make_null_list(pL);
+ 
+	for (int u = 1; u <= pG->n; u++)
+		if (mark[u] == 0)
+			dfs(pG, u, pL);
+}
+    List L;
+	topo_sort(&G, &L);
+	for (int i = L.size; i>=1; i--)
+	    printf("%d ", element_at(&L, i));
+ 
+//topo chieu rong
+void topo_sort(Graph *pG, List *pL) {
+	int d[MAX_N];
+	//Tính b?c vào c?a u
+	for (int u = 1; u <= pG->n; u++) {
+		d[u] = 0;
+		for (int x = 1; x <= pG->n; x++)
+			if (pG->A[x][u] != 0)
+				d[u]++;
+	}
+ 
+	Queue Q;
+	make_null_queue(&Q);
+	//Ðua các d?nh có d[u] = 0 vào hàng d?i
+	for (int u = 1; u <= pG->n; u++)
+		if (d[u] == 0)
+			enqueue(&Q, u);
+ 
+	make_null_list(pL);
+ 
+	while (!empty_queue(&Q)) {
+		int u = front(&Q);
+		dequeue(&Q);
+		push_back(pL, u);
+ 
+		for (int v = 1; v <= pG->n; v++)
+			if (pG->A[u][v] != 0) {
+				d[v]--;
+				if (d[v] == 0)
+					enqueue(&Q, v);
+			}
+	}
+}
+    List L;
+	topo_sort(&G, &L);
+	for (int i = 1; i <= L.size; i++)
+	    printf("%d ", element_at(&L, i));
+ 
+// Lien thong manh
+int num[MAX_N], min_num[MAX_N];
+int k;
+Stack S;
+int on_stack[MAX_N];
+int nb_cnt;
+ 
+void SCC(Graph *pG, int u) {
+ 
+	num[u] = min_num[u] = k; k++;
+	push(&S, u);
+	on_stack[u] = 1;
+ 
+	for (int v = 1; v <= pG->n; v++) {
+		if (adjacent(pG, u, v)) {
+			if (num[v] < 0) {
+				SCC(pG, v);
+				min_num[u] = min(min_num[u], min_num[v]);
+			} else if (on_stack[v])
+				min_num[u] = min(min_num[u], num[v]);
+		}
+	}
+ 
+	if (num[u] == min_num[u]) {
+ 
+		nb_cnt++;
+		int w;
+		do {
+			w = top(&S);
+			pop(&S);
+			on_stack[w] = 0;
+		} while (w != u);
+	}
+}
+ 
+// MooreDijkstra
+int mark[MAXN];
+int pi[MAXN];
+int p[MAXN];
+ 
+void MooreDijkstra(Graph *pG, int s) {
+	int u, v, it;
+	for (u = 1; u <= pG->n; u++) {
+		pi[u] = oo;
+		mark[u] = 0;
+	}
+ 
+	pi[s] = 0;
+	p[s] = -1; 
+ 
+	for (it = 1; it < pG->n; it++) {
+ 
+		int j, min_pi = oo;
+		for (j = 1; j <= pG->n; j++)
+			if (mark[j] == 0 && pi[j] < min_pi) {
+				min_pi = pi[j];
+				u = j;
+			}
+ 
+		mark[u] = 1;
+ 
+		for (v = 1; v <= pG->n; v++)
+			if (pG->W[u][v] != NO_EDGE && mark[v] == 0)
+				if (pi[u] + pG->W[u][v] < pi[v]) {
+					pi[v] = pi[u] + pG->W[u][v];
+					p[v] = u;
+				}
+	}
+}
+ 
+int BellmanFord(Graph *pG, int s) {
+	int u, v, w, it, k;
+	for (u = 1; u <= pG->n; u++) {
+		pi[u] = oo;
+	}
+	pi[s] = 0;
+	p[s] = -1; 
+ 
+	for (it = 1; it < pG->n; it++) {
+ 
+		for (k = 0; k < pG->m; k++) {
+			u = pG->edges[k].u;
+			v = pG->edges[k].v;
+			w = pG->edges[k].w;
+ 
+			if (pi[u] == oo)  
+			    continue;
+ 
+			if (pi[u] + w < pi[v]) {
+				pi[v] = pi[u] + w;
+				p[v] = u;
+			}
+		}
+	}
+ 
+// 	chu trinh am
+	for (k = 0; k < pG->m; k++) {
+		u = pG->edges[k].u;
+		v = pG->edges[k].v;
+		w = pG->edges[k].w;
+ 
+		if (pi[u] == oo)   
+		    continue;
+ 
+		if (pi[u] + w < pi[v]) {
+			return 1;
+		}
+	}
+	return 0;
+}
+ 
+void Prim(Graph *pG){
+    int u,it;
+    for(u=1;u<= pG->n;u++){
+        mark[u]=0;
+        pi[u]=oo;
+    }
+    pi[1]=0;
+ 
+    for(i1=1;it<pG->n;it++){
+        int min=oo;
+        int j;
+        for(j=1;j<=pG->n;j++){
+            if(!mark[j] && pi[j]<min){
+                min=pi[j];
+                u=j;
+            }
+        }
+ 
+        if(u==-1) break;
+ 
+        mark[u]=1;
+ 
+        for(int v=1;v<= pG->n;v++){
+            if(pG->w[u][v] != NO_EDGES && !mark[v] && pG->w[u][v] < pi[v]){
+                pi[v]=pG->w[u][v];
+                p[v]=u;
+            }
+        }
+ 
+    }
+ 
+}
+int Rank[MAX];
+ 
+void xepHang(Graph *pG, int s){
+ 
+    if(Rank[s] != -1){
+        return Rank[s];
+    }
+ 
+    int maxRank=0;
+ 
+    for(int v=1;v<=pG->n;v++){
+        if(adjacent(pG,s,v)){
+           int temp=xepHang(pG,v);
+            if(temp > maxRank){
+                maxRank=temp;
+            }
+        }
+    }
+ 
+    Rank[s]= maxRank+1;
+    return Rank[s];
+ 
+}
+ 
+// Kruskal
+int find(int u) {
+    if (parent[u] == u)
+        return u;
+    return find(parent[u]);
+}
+ 
+ 
+int cmpfunc(const void *a, const void *b) {
+    return ((const Edge*)a)->w - ((const Edge*)b)->w;
+}
+ 
+int cmp(const void *a, const void *b) {
+    Edge *edge_a = (Edge *)a;
+    Edge *edge_b = (Edge *)b;
+    if (edge_a->w < edge_b->w) return -1;
+    if (edge_a->w > edge_b->w) return 1;
+    return 0;
+}
+ 
+ 
+ 
+int Kruskal(Graph *pG, Graph *pT) {
+    qsort(pG->edges, pG->m, sizeof(Edge), cmp);
+ 
+    init_graph(pT, pG->n);
+    for (int u = 1; u <= pG->n; u++)
+        parent[u] = u;
+ 
+    int sum_w = 0;
+ 
+ 
+    for (int e = 0; e < pG->m; e++) {
+        int u = pG->edges[e].u;
+        int v = pG->edges[e].v;
+        int w = pG->edges[e].w;
+        int root_u = find(u);
+        int root_v = find(v); 
+        if (root_u != root_v) { 
+            add_edge(pT, u, v, w);
+            parent[root_v] = root_u;
+            sum_w += w;
+        }
+    }
+    return sum_w;
+}
+ 
+---------------------floyd
+#include <stdio.h>
+ 
+#define MAXM 500
+#define MAXN 100
+#define oo 999999
+#define NO_EDGE -999999
+ 
+typedef struct {
+    int n, m;
+    int W[MAXN][MAXN];
+} Graph;
+ 
+void init_graph(Graph *pG, int n) {
+    pG->n = n;
+    pG->m = 0;
+    for (int u = 1; u <= n; u++)
+        for (int v = 1; v <= n; v++)
+            pG->W[u][v] = NO_EDGE;
+}
+ 
+void add_edge(Graph *pG, int u, int v, int w) {
+    pG->W[u][v] = w;
+    pG->m++;
+}
+ 
+ 
+#define oo 999999
+int pi[MAXN][MAXN];
+int next[MAXN][MAXN];
+int FloydWarshall(Graph *pG) {
+    int u, v, k;
+    for (u = 1; u <= pG->n; u++)
+        for (v = 1; v <= pG->n; v++) {
+            pi[u][v] = oo;
+            next[u][v] = -1;
+        }
+ 
+    for (u = 1; u <= pG->n; u++)
+        pi[u][u] = 0;
+ 
+    for (u = 1; u <= pG->n; u++)
+        for (v = 1; v <= pG->n; v++)
+            if (pG->W[u][v] != NO_EDGE) {
+                pi[u][v] = pG->W[u][v]; //di tr?c ti?p t? u -> v
+                next[u][v] = v;
+            }
+ 
+    for (k = 1; k <= pG->n; k++)
+        for (u = 1; u <= pG->n; u++) {
+            if (pi[u][k] == oo)
+                continue;
+            for (v = 1; v <= pG->n; v++) {
+                if (pi[k][v] == oo)
+                    continue;
+ 
+                if (pi[u][k] + pi[k][v] < pi[u][v]) {
+                    pi[u][v] = pi[u][k] + pi[k][v];
+                    next[u][v] = next[u][k];
+                }
+            }
+        }
+ 
+    //Ki?m tra chu trình âm (n?u c?n thi?t)
+    return 0; //no negative cycle
+}
+ 
+ 
+int main() {
+    Graph G;
+    int n, m;
+    scanf("%d%d", &n, &m);
+    init_graph(&G, n);
+ 
+    for (int e = 0; e < m; e++) {
+        int u, v, w;
+        scanf("%d%d%d", &u, &v, &w);
+        add_edge(&G, u, v, w);
+    }
+ 
+    FloydWarshall(&G);
+ 
+    for (int u = 1; u <= G.n; u++)
+        for (int v = 1; v <= G.n; v++)
+            if (pi[u][v] < oo)
+                printf("%d -> %d: %d\n", u, v, pi[u][v]);
+            else
+                printf("%d -> %d: NO PATH\n", u, v);
+ 
+ 
+    return 0;
+}
+-----------------
+#include <stdio.h>
+ 
+#define MAXM 500
+#define MAXN 100
+#define oo 999999
+#define NO_EDGE -999999
+ 
+typedef struct {
+    int n, m;
+    int W[MAXN][MAXN];
+} Graph;
+ 
+void init_graph(Graph *pG, int n) {
+    pG->n = n;
+    pG->m = 0;
+    for (int u = 1; u <= n; u++)
+        for (int v = 1; v <= n; v++)
+            pG->W[u][v] = NO_EDGE;
+}
+ 
+void add_edge(Graph *pG, int u, int v, int w) {
+    pG->W[u][v] = w;
+    pG->m++;
+}
+ 
+ 
+#define oo 999999
+int pi[MAXN][MAXN];
+int next[MAXN][MAXN];
+int FloydWarshall(Graph *pG) {
+    int u, v, k;
+    for (u = 1; u <= pG->n; u++)
+        for (v = 1; v <= pG->n; v++) {
+            pi[u][v] = oo;
+            next[u][v] = -1;
+        }
+ 
+    for (u = 1; u <= pG->n; u++)
+        pi[u][u] = 0;
+ 
+    for (u = 1; u <= pG->n; u++)
+        for (v = 1; v <= pG->n; v++)
+            if (pG->W[u][v] != NO_EDGE) {
+                pi[u][v] = pG->W[u][v]; //di tr?c ti?p t? u -> v
+                next[u][v] = v;
+            }
+ 
+    for (k = 1; k <= pG->n; k++)
+        for (u = 1; u <= pG->n; u++)
+            for (v = 1; v <= pG->n; v++)
+                if (pi[u][k] + pi[k][v] < pi[u][v]) {
+                    pi[u][v] = pi[u][k] + pi[k][v];
+                    next[u][v] = next[u][k];
+                }
+ 
+    //Ki?m tra chu trình âm (n?u c?n thi?t)
+    int negative_cycle = 0;
+    for (u = 1; u <= pG->n; u++) {
+        if (pi[u][u] < 0) {
+            //Ð? th? có ch?a chu trình âm
+            negative_cycle = 1;
+            break;
+        }
+    }
+    return negative_cycle;
+}
+ 
+ 
+int main() {
+    Graph G;
+    int n, m;
+    scanf("%d%d", &n, &m);
+    init_graph(&G, n);
+ 
+    for (int e = 0; e < m; e++) {
+        int u, v, w;
+        scanf("%d%d%d", &u, &v, &w);
+        add_edge(&G, u, v, w);
+    }
+ 
+    if (FloydWarshall(&G) == 1)
+        printf("YES\n");
+    else
+        printf("NO\n");
+ 
+ 
+    return 0;
+}
+//me cung
+#include <stdio.h>
+ 
+#define MAXN 100
+#define oo 999999
+#define NO_EDGE -1
+ 
+typedef struct {
+    int tsd, tsc;
+    int A[MAXN][MAXN];
+    int pi[MAXN][MAXN];
+} Graph;
+ 
+void init_graph(Graph *G) {
+    scanf("%d", &G->tsd);
+    scanf("%d", &G->tsc);
+    for (int d = 0; d < G->tsd; d++)
+        for (int c = 0; c < G->tsc; c++){
+            scanf("%d", &G->A[d][c]);
+            G->pi[d][c] = oo;
+        }
+}
+ 
+ 
+int mark[MAXN];
+int pi[MAXN];
+int p[MAXN];
+ 
+ 
+int  B_F_DTMC(Graph *G){
+    G->pi[0][0] = 0;
+    int co_sua_pi,pi_moi;
+    do{
+        co_sua_pi = 0;
+        for(int d = 0; d<G->tsd;d++){
+            for(int c = 0; c < G->tsc;c++){
+                if (G->pi[d][c] != oo)  {
+                    //Huong tren
+                    if(d >0){ //Ngoai tru truong hop dong dau
+                        pi_moi = G->pi[d][c] +  G->A[d - 1][c];
+                        if(pi_moi < G->pi[d - 1][c]){
+                            G->pi[d - 1][c] = pi_moi;
+                            co_sua_pi = 1;
+                        }
+                    }
+                    //Huong duoi
+                    if(d < G->tsd - 1){ //Ngoai tru truong hop dong dau
+                        pi_moi = G->pi[d][c] +  G->A[d + 1][c];
+                        if(pi_moi < G->pi[d + 1][c]){
+                            G->pi[d + 1][c] = pi_moi;
+                            co_sua_pi = 1;
+                        }
+                    }
+                    //Huong trai
+                    if(c > 0){ //Ngoai tru truong hop dong dau
+                        pi_moi = G->pi[d][c] +  G->A[d][c -1];
+                        if(pi_moi < G->pi[d][c - 1]){
+                            G->pi[d][c - 1] = pi_moi;
+                            co_sua_pi = 1;
+                        }
+                    }
+                    //Huong phai
+                    if(c < G->tsc - 1){ //Ngoai tru truong hop dong dau
+                        pi_moi = G->pi[d][c] +  G->A[d][c + 1];
+                        if(pi_moi < G->pi[d ][c + 1]){
+                            G->pi[d][c + 1] = pi_moi;
+                            co_sua_pi = 1;
+                        }
+                    }
+                }
+            }
+        }
+ 
+    } while(co_sua_pi);
+    return 0;
+}
+ 
+int max(int a, int b){
+    return a > b ? a : b;
+}
+ 
+int main() {
+    Graph G;
+    init_graph(&G);
+    B_F_DTMC(&G);
+    printf("%d", G.pi[G.tsd - 1][G.tsc  - 1]);
+    return 0;
+}
